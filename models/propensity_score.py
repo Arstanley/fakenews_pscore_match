@@ -7,17 +7,6 @@ from sklearn.linear_model.logistic import LogisticRegression
 class propensity_score:
     def __init__(self, model='logistic'):
         self.model = 'logistic'
-        ##  Hard-coded for now for the problems in using nltk
-        self.stop_words = {'ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there', 'about', 
-        'once', 'during', 'out', 'very', 'having', 'with', 'they', 'own', 
-        'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', 'of', 'most', 
-        'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as', 'from', 'him', 'each', 
-        'the', 'themselves', 'until', 'below', 'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me', 
-        'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above', 'both', 'up', 
-        'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and', 'been', 'have', 
-        'in', 'will', 'on', 'does', 'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not', 
-        'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where', 'too', 'only', 'myself', 'which', 'those', 'i', 'after', 
-        'few', 'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how', 'further', 'was', 'here', 'than'}
 
     def regress_on_words(word_index, X):
         """
@@ -37,10 +26,22 @@ class propensity_score:
         log_reg.fit(X, labels)
 
         probs = log_reg.predict_proba(X)[1]
+        return probs
 
+    def search_for_closest_control(X, idx, word_idx):
+        i, j = idx - 1, idx + 1
+        while (i >= 0 or j < X.shape[0]):
+            if (X[i][word_idx] != 0 and X[j][word_idx] != 0):
+                i -= 1
+                j += 1
+            else:
+                if X[i][word_idx] == 1:
+                    return X[i], i
+                else:
+                    return X[j], j
+
+    def calc_chi_square(paired_X):
         
-
-        return 
 
     def fit(self, text_corpus):
         """
@@ -57,7 +58,24 @@ class propensity_score:
         max_len = max([len(arr) for arr in X])
         X = tokenizer.texts_to_matrix(texts)
 
-        for (k, v) in word_dict: # k: index v: words
+        for (word_idx, word) in enumerate(word_dict): # k: index v: words
+            probs = regress_on_words(word_idx, X)
+            X_with_probas = sorted(np.concatenate((X, labels, probs), axis=1), key=lambda x: x[-1])
+            paired_X = np.array([])  # Object that stores the paired instances for Chi-square Calculation
+            for (idx, treatment) in enumerate(X_with_probas):
+                if treatment[word_idx] == 1: # Then we found a treatment element
+                    paired_control, ctrl_idx = search_for_closest_control(X_with_probas, idx, word_idx)
+                    np.append(paired_X, obj)
+                    np.append(paired_X, paired_elt)
+                    np.delete(X_with_probas, idx, axis=0)
+                    np.delete(X_with_probas, ctrl_idx)
+                else:
+                    continue
+            test_statistics = calc_chi_square(paired_X) # Calculate the Chi-square statistics for feature selection
+
+                
+
+
             
 
 
