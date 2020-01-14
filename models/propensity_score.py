@@ -1,5 +1,5 @@
-import pandas as pd 
-import numpy as np 
+import pandas as pd
+import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.linear_model.logistic import LogisticRegression
@@ -22,7 +22,7 @@ class propensity_score:
                 labels.append(1)
             else:
                 labels.append(0)
-        
+
         # Build the logistic regression model
         log_reg = LogisticRegression()
         log_reg.fit(tmp_X, labels)
@@ -63,11 +63,11 @@ class propensity_score:
         """
         texts = text_corpus.iloc[:, 0]
         labels = text_corpus.iloc[:, 1]
-        
+
         tokenizer = Tokenizer(num_words=5000, lower=True)  # Parameter num_words will not be used
         tokenizer.fit_on_texts(texts)
         word_dict = tokenizer.word_index
-        
+
         # Transform the data and pad the length for processing
         X = tokenizer.texts_to_matrix(texts)
         max_len = max([len(arr) for arr in X])
@@ -90,14 +90,14 @@ class propensity_score:
                     continue
             test_statistics = self.calc_chi_square(paired_X, word_idx) # Calculate the Chi-square statistics for feature selection
             res.append([word, test_statistics])
-            print([word, test_statistics])
+
 
         self.features = sorted(res, key=lambda x: x[-1])
 
 
-                
 
 
-            
+
+
 
 
