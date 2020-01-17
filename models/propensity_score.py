@@ -136,8 +136,6 @@ class propensity_score:
                     paired_X.append(treatment)
                     paired_X_idx.append((idx, 0))
                     paired_X_idx.append((ctrl_idx, 1))
-                    np.delete(tmp_X, idx, axis=0)
-                    np.delete(tmp_X, ctrl_idx, axis=0)
                 else:
                     continue
             test_statistics = self.calc_chi_square(paired_X, word_idx) # Calculate the Chi-square statistics for feature selection
