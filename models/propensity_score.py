@@ -29,7 +29,7 @@ class info_gain:
         texts = text_corpus.iloc[:, 0]
         labels = np.array(text_corpus.iloc[:, 1]).reshape(len(text_corpus), 1)
 
-        tokenizer = Tokenizer(num_words=3200, lower=True)  # Parameter num_words will not be used
+        tokenizer = Tokenizer(num_words=5000, lower=False)  # Parameter num_words will not be used
         tokenizer.fit_on_texts(texts)
         word_dict = tokenizer.word_index
 
@@ -78,10 +78,10 @@ class propensity_score:
 
         return probs
 
-    def search_for_closest_control(self, X, idx, word_idx):
+    def search_for_closest_control(self, X, idx, word_idx, paired_idx):
         i, j = idx - 1, idx + 1
         while (i >= 0 or j < len(X)):
-            if (X[i][word_idx] == 1 and X[j][word_idx] == 1):
+            if (X[i][word_idx] == 1 and X[j][word_idx] == 1) or (i in paired_idx or j in paired_idx):
                 i -= 1
                 j += 1
             else:
@@ -109,8 +109,9 @@ class propensity_score:
         """
         texts = text_corpus.iloc[:, 0]
         labels = text_corpus.iloc[:, 1]
+        num_total = len(texts)
 
-        tokenizer = Tokenizer(num_words=5000, lower=True)  # Parameter num_words will not be used
+        tokenizer = Tokenizer(num_words=5000, lower=False)  # Parameter num_words will not be used
         tokenizer.fit_on_texts(texts)
         word_dict = tokenizer.word_index
 
@@ -119,25 +120,25 @@ class propensity_score:
         max_len = max([len(arr) for arr in X])
         res = []
 
-        texts = np.array(texts).reshape(864, 1)
+        texts = np.array(texts).reshape(num_total, 1)
 
         for (word, word_idx) in tqdm(word_dict.items(), total=len(word_dict)): # k: index v: words
             probs = self.regress_on_words(word_idx, X)
-            labels, probs = np.array(labels).reshape(864, 1), probs.reshape(864, 1)
+            labels, probs = np.array(labels).reshape(num_total, 1), probs.reshape(num_total, 1)
             X_with_probas = sorted(np.concatenate((X, labels, probs), axis=1), key=lambda x: -x[-1])
             texts_with_probas = sorted(np.concatenate((texts, probs), axis=1), key=lambda x: -x[-1])
             paired_X = []  # Object that stores the paired instances for Chi-square Calculation
             paired_X_idx = []
-            tmp_X = X_with_probas
-            for (idx, treatment) in enumerate(tmp_X):
+            for (idx, treatment) in enumerate(X_with_probas):
                 if treatment[word_idx] == 1.: # If we could find a treatment element
-                    paired_control, ctrl_idx = self.search_for_closest_control(tmp_X, idx, word_idx)
+                    paired_control, ctrl_idx = self.search_for_closest_control(X_with_probas, idx, word_idx, paired_X_idx)
                     paired_X.append(paired_control)
                     paired_X.append(treatment)
-                    paired_X_idx.append((idx, 0))
-                    paired_X_idx.append((ctrl_idx, 1))
+                    paired_X_idx.append(idx)
+                    paired_X_idx.append(ctrl_idx)
                 else:
                     continue
+
             test_statistics = self.calc_chi_square(paired_X, word_idx) # Calculate the Chi-square statistics for feature selection
             res.append([word, test_statistics])
 
