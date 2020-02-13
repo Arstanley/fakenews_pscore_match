@@ -20,7 +20,7 @@ p_score_gossipcop.fit(gossipcop)
 
 The acceptable input will be something like the following 
 ```
-Texts  | Label
+Texts  |  Label
 ```
 
 
