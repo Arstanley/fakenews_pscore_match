@@ -1,6 +1,6 @@
 # FakeNews Detection with Propensity Score Matching
 
-This is a repository for [_Improving Generalizability of Fake News Detection Methods using Propensity Score Matching_](https://arxiv.org/abs/2002.00838)
+This is a repository for [_Improving Generalizability of Fake News Detection Methods using Propensity Score Matching_](https://arxiv.org/abs/2002.00838) Note that the approach is in general suitable for any text analysis involving feature selection.
 
 ## Repository Structure
 
